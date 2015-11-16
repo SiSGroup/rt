@@ -129,6 +129,8 @@
 <td class="value"> <& /Elements/SelectPriority, Name => "Priority", Default => $ARGS{Priority} &> </td></tr>
 <tr><td class="label"> <&|/l&>Make queue</&>: </td>
 <td class="value"> <& /Elements/SelectQueue, Name => "Queue", Default => $ARGS{Queue} &> </td></tr>
+<tr><td class="label"> <&|/l&>Make SLA</&>: </td>
+<td class="value"> <& /Elements/SelectSLA, Name => "SLA", Default => $ARGS{SLA} &> </td></tr>
 <tr><td class="label"> <&|/l&>Make Status</&>: </td>
 <td class="value"> <& /Ticket/Elements/SelectStatus, Name => "Status", Default => $ARGS{Status}, Queues => $seen_queues &> </td></tr>
 <tr><td class="label"> <&|/l&>Make date Starts</&>: </td>
