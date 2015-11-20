@@ -46,57 +46,55 @@
 #
 # END BPS TAGGED BLOCK }}}
 
-
 use strict;
 use warnings;
 
-package RT::Action::SLA;
+package RT::Action::SLA_SetResolve;
 
-use base qw(RT::SLA RT::Action);
+use base qw(RT::Action::SLA);
 
-=head1 NAME
+=head2 Prepare
 
-RT::Action::SLA - base class for all actions in the extension
-
-=head1 DESCRIPTION
-
-It's not a real action, but container for subclassing which provide
-help methods for other actions.
-
-=head1 METHODS
-
-=head2 SetDateField NAME VALUE
-
-Sets specified ticket's date field to the value, doesn't update
-if field is set already. VALUE is unix time.
+Checks if the ticket has service level defined.
 
 =cut
 
-sub SetDateField {
+sub Prepare {
     my $self = shift;
-    my ($type, $value) = (@_);
 
-    my $ticket = $self->TicketObj;
-
-    my $method = $type .'Obj';
-    if ( defined $value ) {
-        return 1 if $ticket->$method->Unix == $value;
-    } else {
-        return 1 if $ticket->$method->Unix <= 0;
-    }
-
-    my $date = RT::Date->new( $RT::SystemUser );
-    $date->Set( Format => 'unix', Value => $value );
-
-    $method = 'Set'. $type;
-    return 1 if defined($ticket->$type) and $ticket->$type eq $date->ISO;
-    my ($status, $msg) = $ticket->$method( $date->ISO );
-    unless ( $status ) {
-        $RT::Logger->error("Couldn't set $type date: $msg");
+    unless ( $self->TicketObj->SLA ) {
+        $RT::Logger->error('SLA::SetResolve scrip has been applied to ticket #'
+            . $self->TicketObj->id . ' that has no SLA defined');
         return 0;
     }
 
     return 1;
+}
+
+=head2 Commit
+
+Set the Resolve date accordingly to SLA.
+
+=cut
+
+sub Commit {
+    my $self = shift;
+
+    my $ticket = $self->TicketObj;
+    my $txn = $self->TransactionObj;
+    my $level = $ticket->SLA;
+    my $starts = $ticket->StartsObj;
+    my $time = $starts->IsSet ? $starts->Unix : $ticket->CreatedObj->Unix;
+
+    my $resolve_due = $self->Due(
+        Ticket => $ticket,
+        Level => $level,
+        Type => 'Resolve',
+        Time => $time,
+    );
+    $RT::Logger->notice(sprintf("SLA::SetResolve(Ticket => %d, Txn => %d, Level => '%s', Time => %d) == %s", $ticket->Id, $txn->Id, $level, $time, $resolve_due || 'undef'));
+
+    return $self->SetDateField( SLAResolve => $resolve_due );
 }
 
 1;

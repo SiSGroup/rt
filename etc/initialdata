@@ -116,6 +116,10 @@
     { Name        => 'Send Forward',                 # loc
       Description => 'Send forwarded message',       # loc
       ExecModule  => 'SendForward', },
+    {  Name        => 'Set default service level', # loc
+       Description => 'Set service level according to the config' , # loc
+       ExecModule  => 'SLA_SetDefault',
+    },
     {  Name        => 'Set starts date according to SLA', # loc
        Description => 'Set the starts date according to an agreement' , # loc
        ExecModule  => 'SLA_SetStarts',
@@ -123,6 +127,14 @@
     {  Name        => 'Set due date according to SLA', # loc
        Description => 'Set the due date according to an agreement' , # loc
        ExecModule  => 'SLA_SetDue',
+    },
+    {  Name        => 'Set reply by date according to SLA', # loc
+       Description => 'Set the due date according to an agreement' , # loc
+       ExecModule  => 'SLA_SetReply',
+    },
+    {  Name        => 'Set resolve by date according to SLA', # loc
+       Description => 'Set the due date according to an agreement' , # loc
+       ExecModule  => 'SLA_SetResolve',
     },
     { Name        => 'Update Parent TimeWorked',     # loc
       Description => 'Update Parent TimeWorked',     # loc
@@ -240,6 +252,11 @@
        ApplicableTransTypes => 'Status,Set',
        ExecModule           => 'ReopenTicket',
     },
+    {  Name        => 'Require default SLA', # loc
+       Description => 'Detect a situation when we should set default service level' , # loc
+       ApplicableTransTypes => 'Create',
+       ExecModule => 'SLA_RequireDefault',
+    },
     {  Name        => 'Require Starts set according to SLA', # loc
        Description => 'Detect a situation when we should set Starts date' , # loc
        ApplicableTransTypes => 'Create,Set',
@@ -249,6 +266,16 @@
        Description => 'Detect a situation when we should set Due date' , # loc
        ApplicableTransTypes => 'Create,Correspond,Set,Status',
        ExecModule => 'SLA_RequireDueSet',
+    },
+    {  Name        => 'Require SLAReply set according to SLA', # loc
+       Description => 'Detect a situation when we should set SLAReply date' , # loc
+       ApplicableTransTypes => 'Create,Correspond,Set,Status',
+       ExecModule => 'SLA_RequireReplySet',
+    },
+    {  Name        => 'Require SLAResolve set according to SLA', # loc
+       Description => 'Detect a situation when we should set SLAResolve date' , # loc
+       ApplicableTransTypes => 'Create,Set,Status',
+       ExecModule => 'SLA_RequireResolveSet',
     },
     {
        Name                 => 'On TimeWorked Change',                    # loc
@@ -829,14 +856,18 @@ Hour:         { $SubscriptionObj->SubValue('Hour') }
        ScripCondition => 'On Forward Ticket',
        ScripAction    => 'Send Forward',
        Template       => 'Forward Ticket' },
-    {  Description       => "Set starts date if needed according to SLA",
-       ScripCondition    => 'Require starts set according to SLA',
-       ScripAction       => 'Set starts date according to SLA',
-       Template          => 'Blank' },
-    {  Description       => "Set due date if needed according to SLA",
-       ScripCondition    => 'Require due set according to SLA',
-       ScripAction       => 'Set due date according to SLA',
-       Template          => 'Blank' },
+    {  Description    => "Set starts date if needed according to SLA",
+       ScripCondition => 'Require Starts set according to SLA',
+       ScripAction    => 'Set starts date according to SLA',
+       Template       => 'Blank' },
+    {  Description    => "Set reply by date if needed according to SLA",
+       ScripCondition => 'Require SLAReply set according to SLA',
+       ScripAction    => 'Set reply by date according to SLA',
+       Template       => 'Blank' },
+    {  Description    => "Set resolve by date if needed according to SLA",
+       ScripCondition => 'Require SLAResolve set according to SLA',
+       ScripAction    => 'Set resolve by date according to SLA',
+       Template       => 'Blank' },
     {  Description    => 'On TimeWorked Change Update Parent TimeWorked',
        ScripCondition => 'On TimeWorked Change',
        ScripAction    => 'Update Parent TimeWorked',

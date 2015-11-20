@@ -106,8 +106,8 @@ sub Agreement {
         return undef;
     }
 
-    if ( $args{'Ticket'} && $res{'IgnoreOnStatuses'} ) {
-        my $status = $args{'Ticket'}->Status;
+    if ( $res{'IgnoreOnStatuses'} && ( $args{'Ticket'} || $args{'Status'} )) {
+        my $status = $args{'Status'} ? $args{'Status'} : $args{'Ticket'}->Status;
         return undef if grep $_ eq $status, @{$res{'IgnoreOnStatuses'}};
     }
 
@@ -158,9 +158,9 @@ sub CalculateTime {
             }
         }
 
-        if (   $args{ Ticket }
+        if (   $agreement->{ ExcludeTimeOnIgnoredStatuses }
             && $agreement->{ IgnoreOnStatuses }
-            && $agreement->{ ExcludeTimeOnIgnoredStatuses } )
+            && $args{ Ticket } )
         {
             my $txns = RT::Transactions->new( RT->SystemUser );
             $txns->LimitToTicket($args{Ticket}->id);
@@ -238,7 +238,7 @@ sub GetDefaultServiceLevel {
     if ( $args{'Queue'} ) {
         return undef if $args{Queue}->SLADisabled;
         return $args{'Queue'}->SLA if $args{'Queue'}->SLA;
-        if ( $RT::ServiceAgreements{'QueueDefault'} &&
+        if ( $RT::ServiceAgreements{'QueueDefault'} && defined($args{'Queue'}->Name) &&
             ( my $info = $RT::ServiceAgreements{'QueueDefault'}{ $args{'Queue'}->Name } )) {
             return $info unless ref $info;
             return $info->{'Level'} || $RT::ServiceAgreements{'Default'};

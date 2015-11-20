@@ -232,11 +232,14 @@ sub Create {
         TimeWorked         => "0",
         TimeLeft           => 0,
         TimeEstimated      => 0,
+        TimeResolvedLeft   => undef,
         Due                => undef,
         Starts             => undef,
         Started            => undef,
         Resolved           => undef,
         SLA                => undef,
+        SLAReply           => undef,
+        SLAResolve         => undef,
         MIMEObj            => undef,
         _RecordTransaction => 1,
         @_
@@ -380,25 +383,67 @@ sub Create {
     $RT::Handle->BeginTransaction();
 
     my %params = (
-        Queue           => $QueueObj->Id,
-        Subject         => $args{'Subject'},
-        InitialPriority => $args{'InitialPriority'},
-        FinalPriority   => $args{'FinalPriority'},
-        Priority        => $args{'Priority'},
-        Status          => $args{'Status'},
-        TimeWorked      => $args{'TimeWorked'},
-        TimeEstimated   => $args{'TimeEstimated'},
-        TimeLeft        => $args{'TimeLeft'},
-        Type            => $args{'Type'},
-        Created         => $Now->ISO,
-        Starts          => $Starts->ISO,
-        Started         => $Started->ISO,
-        Resolved        => $Resolved->ISO,
-        Due             => $Due->ISO,
-        $args{ 'Type' } eq 'ticket'
-          ? ( SLA => $args{ SLA } || RT::SLA->GetDefaultServiceLevel( Queue => $QueueObj ), )
-          : (),
+        Queue            => $QueueObj->Id,
+        Subject          => $args{'Subject'},
+        InitialPriority  => $args{'InitialPriority'},
+        FinalPriority    => $args{'FinalPriority'},
+        Priority         => $args{'Priority'},
+        Status           => $args{'Status'},
+        TimeWorked       => $args{'TimeWorked'},
+        TimeEstimated    => $args{'TimeEstimated'},
+        TimeLeft         => $args{'TimeLeft'},
+        TimeResolvedLeft => $args{'TimeResolvedLeft'},
+        Type             => $args{'Type'},
+        Created          => $Now->ISO,
+        Starts           => $Starts->ISO,
+        Started          => $Started->ISO,
+        Resolved         => $Resolved->ISO,
+        Due              => $Due->ISO,
     );
+
+    if ($args{ 'Type' } eq 'ticket') {
+        my $SLA = $args{ 'SLA' } || RT::SLA->GetDefaultServiceLevel( Queue => $QueueObj );
+        if ($SLA) {
+            $params{ 'SLA' } = $SLA;
+            unless (0 && $args{'_RecordTransaction'}) {
+                my $now = $Now->Unix;
+                unless (defined $args{'Starts'}) {
+                    my $StartsUnix = RT::SLA->Starts( Level => $SLA, Status => $args{'Status'}, Queue => $QueueObj, Time => $now );
+                    if (defined $StartsUnix and $StartsUnix > 0) {
+                        $Starts->Set( Format => 'Unix', Value => $args{'Starts'} );
+                        $params{ 'Starts' } = $Starts->ISO;
+                    }
+                }
+                $now = $Starts->Unix if $Starts->Unix > 0;
+                unless (defined $args{'SLAReply'}) {
+                    my $SLAReplyUnix = RT::SLA->Due( Level => $SLA, Status => $args{'Status'}, Queue => $QueueObj, Type => 'Response', Time => $now );
+                    if (defined $SLAReplyUnix and $SLAReplyUnix > 0) {
+                        my $SLAReply = RT::Date->new( $self->CurrentUser );
+                        $SLAReply->Set( Format => 'Unix', Value => $SLAReplyUnix );
+                        $params{ 'SLAReply' } = $SLAReply->ISO;
+                    }
+                }
+                unless (defined $args{'SLAResolve'}) {
+                    my $SLAResolveUnix = RT::SLA->Due( Level => $SLA, Status => $args{'Status'}, Queue => $QueueObj, Type => 'Resolve', Time => $now );
+                    if (defined $SLAResolveUnix and $SLAResolveUnix > 0) {
+                        my $SLAResolve = RT::Date->new( $self->CurrentUser );
+                        $SLAResolve->Set( Format => 'Unix', Value => $SLAResolveUnix );
+                        $params{ 'SLAResolve' } = $SLAResolve->ISO;
+                    }
+                }
+            }
+            if (defined $args{'SLAReply'}) {
+                my $date = RT::Date->new( $self->CurrentUser );
+                $date->Set( Format => 'ISO', Value => $args{'SLAReply'} );
+                $params{ 'SLAReply' } = $date->ISO if $date->Unix > 0;
+            }
+            if (defined $args{'SLAResolve'}) {
+                my $date = RT::Date->new( $self->CurrentUser );
+                $date->Set( Format => 'ISO', Value => $args{'SLAResolve'} );
+                $params{ 'SLAResolve' } = $date->ISO if $date->Unix > 0;
+            }
+        }
+    }
 
 # Parameters passed in during an import that we probably don't want to touch, otherwise
     foreach my $attr (qw(id Creator Created LastUpdated LastUpdatedBy)) {
@@ -1363,6 +1408,50 @@ sub ToldObj {
     return $time;
 }
 
+=head2 SLAReplyObj
+
+  Returns an RT::Date object containing this ticket's SLA reply date
+
+=cut
+
+sub SLAReplyObj {
+    my $self = shift;
+
+    my $time = RT::Date->new( $self->CurrentUser );
+
+    # -1 is RT::Date slang for never
+    if ( my $due = $self->SLAReply ) {
+        $time->Set( Format => 'sql', Value => $due );
+    }
+    else {
+        $time->Set( Format => 'unix', Value => -1 );
+    }
+
+    return $time;
+}
+
+=head2 SLAResolveObj
+
+  Returns an RT::Date object containing this ticket's SLA resolve date
+
+=cut
+
+sub SLAResolveObj {
+    my $self = shift;
+
+    my $time = RT::Date->new( $self->CurrentUser );
+
+    # -1 is RT::Date slang for never
+    if ( my $due = $self->SLAResolve ) {
+        $time->Set( Format => 'sql', Value => $due );
+    }
+    else {
+        $time->Set( Format => 'unix', Value => -1 );
+    }
+
+    return $time;
+}
+
 sub _DurationAsString {
     my $self = shift;
     my $value = shift;
@@ -1408,7 +1497,16 @@ sub TimeEstimatedAsString {
     return $self->_DurationAsString( $self->TimeEstimated );
 }
 
+=head2 TimeResolvedLeftAsString
 
+Returns the amount of time worked on this ticket as a text string.
+
+=cut
+
+sub TimeResolvedLeftAsString {
+    my $self = shift;
+    return $self->_DurationAsString( $self->TimeResolvedLeft );
+}
 
 
 =head2 Comment
@@ -3425,7 +3523,13 @@ sub _CoreAccessible {
         Status =>
                 {read => 1, write => 1, sql_type => 12, length => 64,  is_blob => 0,  is_numeric => 0,  type => 'varchar(64)', default => ''},
         SLA =>
-                {read => 1, write => 1, sql_type => 12, length => 64,  is_blob => 0,  is_numeric => 0,  type => 'varchar(64)', default => ''},
+                {read => 1, write => 1, sql_type => 12, length => 64,  is_blob => 0,  is_numeric => 0,  type => 'varchar(64)', default => undef},
+        SLAReply =>
+                {read => 1, write => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
+        SLAResolve =>
+                {read => 1, write => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
+        TimeResolvedLeft =>
+                {read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => undef},
         TimeLeft =>
                 {read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
         Told =>

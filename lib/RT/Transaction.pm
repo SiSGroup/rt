@@ -111,6 +111,7 @@ sub Create {
     my %args = (
         id             => undef,
         TimeTaken      => 0,
+        TimeReplyLeft  => undef,
         Type           => 'undefined',
         Data           => '',
         Field          => undef,
@@ -135,7 +136,21 @@ sub Create {
         return ( 0, $self->loc( "Transaction->Create couldn't, as you didn't specify an object type and id"));
     }
 
-
+    unless ( defined($args{'TimeReplyLeft'}) || $args{'ObjectType'} ne 'RT::Ticket') {
+        if ( $args{'Type'} eq 'Correspond' ) {
+            my $ticket = RT::Ticket->new( $self->CurrentUser );
+            $ticket->Load($args{'ObjectId'});
+            my $sla = $ticket->Id ? $ticket->SLAReplyObj->Diff : undef;
+            if (defined $sla) {
+                if ($sla) {
+                    my $sign = $sla / abs($sla);
+                    $sla = sprintf("%.0f", $sign * int(abs($sla)/60+1));
+                }
+                $RT::Logger->notice("Ticket#$args{'ObjectId'} $args{'Type'} response with $sla minutes left for SLA reply");
+                $args{'TimeReplyLeft'} = $sla;
+            }
+        }
+    }
 
     #lets create our transaction
     my %params = (
@@ -156,7 +171,11 @@ sub Create {
     foreach my $attr (qw(id Creator Created LastUpdated TimeTaken LastUpdatedBy)) {
         $params{$attr} = $args{$attr} if ($args{$attr});
     }
- 
+
+    foreach my $attr (qw(TimeReplyLeft)) {
+        $params{$attr} = $args{$attr} if defined($args{$attr});
+    }
+
     my $id = $self->SUPER::Create(%params);
     $self->Load($id);
     if ( defined $args{'MIMEObj'} ) {
@@ -1973,6 +1992,8 @@ sub _CoreAccessible {
                 {read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
         Created =>
                 {read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
+        TimeReplyLeft =>
+                {read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => undef},
 
  }
 };

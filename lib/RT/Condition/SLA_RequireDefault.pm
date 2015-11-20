@@ -46,56 +46,28 @@
 #
 # END BPS TAGGED BLOCK }}}
 
+package RT::Condition::SLA_RequireDefault;
+use base qw(RT::Condition::SLA);
 
 use strict;
 use warnings;
 
-package RT::Action::SLA;
 
-use base qw(RT::SLA RT::Action);
+=head1 IsApplicable
 
-=head1 NAME
-
-RT::Action::SLA - base class for all actions in the extension
-
-=head1 DESCRIPTION
-
-It's not a real action, but container for subclassing which provide
-help methods for other actions.
-
-=head1 METHODS
-
-=head2 SetDateField NAME VALUE
-
-Sets specified ticket's date field to the value, doesn't update
-if field is set already. VALUE is unix time.
+Applies the current scrip when SLA is not set. Returns true on create,
+but only if SLA CustomField is applied to the ticket and it has no
+value set.
 
 =cut
 
-sub SetDateField {
+sub IsApplicable {
     my $self = shift;
-    my ($type, $value) = (@_);
-
+    return 0 unless $self->TransactionObj->Type eq 'Create';
     my $ticket = $self->TicketObj;
-
-    my $method = $type .'Obj';
-    if ( defined $value ) {
-        return 1 if $ticket->$method->Unix == $value;
-    } else {
-        return 1 if $ticket->$method->Unix <= 0;
-    }
-
-    my $date = RT::Date->new( $RT::SystemUser );
-    $date->Set( Format => 'unix', Value => $value );
-
-    $method = 'Set'. $type;
-    return 1 if defined($ticket->$type) and $ticket->$type eq $date->ISO;
-    my ($status, $msg) = $ticket->$method( $date->ISO );
-    unless ( $status ) {
-        $RT::Logger->error("Couldn't set $type date: $msg");
-        return 0;
-    }
-
+    return 0 unless lc($ticket->Type) eq 'ticket';
+    return 0 if $ticket->SLA
+    return 0 unless $self->SLAIsApplied;
     return 1;
 }
 

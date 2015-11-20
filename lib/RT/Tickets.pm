@@ -104,21 +104,22 @@ __PACKAGE__->RegisterCustomFieldJoin(@$_) for
 # metadata.
 
 our %FIELD_METADATA = (
-    Status          => [ 'STRING', ], #loc_left_pair
-    SLA             => [ 'STRING', ], #loc_left_pair
-    Queue           => [ 'ENUM' => 'Queue', ], #loc_left_pair
-    Type            => [ 'ENUM', ], #loc_left_pair
-    Creator         => [ 'ENUM' => 'User', ], #loc_left_pair
-    LastUpdatedBy   => [ 'ENUM' => 'User', ], #loc_left_pair
-    Owner           => [ 'WATCHERFIELD' => 'Owner', ], #loc_left_pair
-    EffectiveId     => [ 'INT', ], #loc_left_pair
-    id              => [ 'ID', ], #loc_left_pair
-    InitialPriority => [ 'INT', ], #loc_left_pair
-    FinalPriority   => [ 'INT', ], #loc_left_pair
-    Priority        => [ 'INT', ], #loc_left_pair
-    TimeLeft        => [ 'INT', ], #loc_left_pair
-    TimeWorked      => [ 'INT', ], #loc_left_pair
-    TimeEstimated   => [ 'INT', ], #loc_left_pair
+    Status           => [ 'STRING', ], #loc_left_pair
+    SLA              => [ 'STRING', ], #loc_left_pair
+    Queue            => [ 'ENUM' => 'Queue', ], #loc_left_pair
+    Type             => [ 'ENUM', ], #loc_left_pair
+    Creator          => [ 'ENUM' => 'User', ], #loc_left_pair
+    LastUpdatedBy    => [ 'ENUM' => 'User', ], #loc_left_pair
+    Owner            => [ 'WATCHERFIELD' => 'Owner', ], #loc_left_pair
+    EffectiveId      => [ 'INT', ], #loc_left_pair
+    id               => [ 'ID', ], #loc_left_pair
+    InitialPriority  => [ 'INT', ], #loc_left_pair
+    FinalPriority    => [ 'INT', ], #loc_left_pair
+    Priority         => [ 'INT', ], #loc_left_pair
+    TimeLeft         => [ 'INT', ], #loc_left_pair
+    TimeWorked       => [ 'INT', ], #loc_left_pair
+    TimeResolvedLeft => [ 'INT' ],
+    TimeEstimated    => [ 'INT', ], #loc_left_pair
 
     Linked          => [ 'LINK' ], #loc_left_pair
     LinkedTo        => [ 'LINK' => 'To' ], #loc_left_pair
@@ -137,10 +138,13 @@ our %FIELD_METADATA = (
     Resolved         => [ 'DATE'            => 'Resolved', ], #loc_left_pair
     LastUpdated      => [ 'DATE'            => 'LastUpdated', ], #loc_left_pair
     Created          => [ 'DATE'            => 'Created', ], #loc_left_pair
+    SLAReply         => [ 'DATE' ],
+    SLAResolve       => [ 'DATE' ],
     Subject          => [ 'STRING', ], #loc_left_pair
     Content          => [ 'TRANSCONTENT', ], #loc_left_pair
     ContentType      => [ 'TRANSFIELD', ], #loc_left_pair
     Filename         => [ 'TRANSFIELD', ], #loc_left_pair
+    TimeReplyLeft    => [ 'TRANSFIELD' ],
     TransactionDate  => [ 'TRANSDATE', ], #loc_left_pair
     Requestor        => [ 'WATCHERFIELD'    => 'Requestor', ], #loc_left_pair
     Requestors       => [ 'WATCHERFIELD'    => 'Requestor', ], #loc_left_pair
@@ -247,7 +251,7 @@ sub FIELDS     { return \%FIELD_METADATA }
 our @SORTFIELDS = qw(id Status
     Queue Subject
     Owner Created Due Starts Started
-    Told
+    Told SLA SLAReply SLAResolve
     Resolved LastUpdated Priority TimeWorked TimeLeft);
 
 =head2 SortFields

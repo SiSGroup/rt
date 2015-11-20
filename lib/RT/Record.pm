@@ -1768,7 +1768,7 @@ our %TRANSACTION_CLASSIFICATION = (
     Set        => {
         __default => 'basics',
         map( { $_ => 'dates' } qw(
-            Told Starts Started Due LastUpdated Created LastUpdated
+            Told Starts Started Due LastUpdated Created LastUpdated SLAReply SLAResolve
         ) ),
         map( { $_ => 'people' } qw(
             Owner Creator LastUpdatedBy

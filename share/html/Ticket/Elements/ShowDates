@@ -99,6 +99,32 @@
 % $m->callback( %ARGS, CallbackName => 'AfterResolved', TicketObj => $Ticket );
 % }
 
+% my $sla = $Ticket->QueueObj->SLADisabled ? undef : $Ticket->SLA;
+% if ($sla) {
+%   my $active = $Ticket->QueueObj->IsActiveStatus($Ticket->Status);
+%   my $due = $Ticket->SLAReplyObj;
+%   if ( !$hide_unset_fields || $due && $due->IsSet ) {
+  <tr class="date sla-told">
+    <td class="label"><&|/l&>SLA Reply By</&>:</td>\
+%     if ($active and ($due->Diff||0) < 0 ) {
+    <td class="value"><span class="overdue"><% $due->AsString %></span></td>
+%     } else {
+    <td class="value"><% $due->AsString %></td>
+%     }
+  </tr>
+%   }
+%   $due = $Ticket->SLAResolveObj;
+%   if ( !$hide_unset_fields || $due && $due->IsSet ) {
+  <tr class="date sla-due">
+    <td class="label"><&|/l&>SLA Resolve By</&>:</td>\
+%     if ($active and ($due->Diff||0) < 0 ) {
+    <td class="value"><span class="overdue"><% $due->AsString %></span></td>
+%     } else {
+    <td class="value"><% $due->AsString %></td>
+%     }
+  </tr>
+%   }
+% }
   <tr class="date updated">
     <td class="label"><&|/l&>Updated</&>:</td>\
 % my $UpdatedString = $Ticket->LastUpdated ? loc("[_1] by [_2]", $Ticket->LastUpdatedAsString, $m->scomp('/Elements/ShowUser', User => $Ticket->LastUpdatedByObj)) : loc("Never");

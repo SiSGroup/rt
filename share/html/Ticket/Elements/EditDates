@@ -77,6 +77,21 @@
       (<% $TicketObj->DueObj->AsString %>)
     </td>
   </tr>
+  <tr>
+    <td class="label"><&|/l&>SLA Reply By</&>:</td>
+    <td class="entry">
+      <& /Elements/SelectDate, menu_prefix => 'SLAReply', current => 0, Default => $TicketObj->SLAReplyObj->Unix ? $TicketObj->SLAReplyObj->ISO(Timezone => 'user') : '' &>
+      (<%$TicketObj->SLAReplyObj->AsString %>)
+    </td>
+  </tr>
+  <tr>
+    <td class="label"><&|/l&>SLA Resolve By</&>:</td>
+    <td class="entry"><& /Elements/SelectDate, menu_prefix => '', current => 0 &> ()</td>
+    <td class="entry">
+      <& /Elements/SelectDate, menu_prefix => 'SLAResolve', current => 0, Default => $TicketObj->SLAResolveObj->Unix ? $TicketObj->SLAResolveObj->ISO(Timezone => 'user') : '' &>
+      (<%$TicketObj->SLAResolveObj->AsString %>)
+    </td>
+  </tr>
   <& /Elements/EditCustomFields, Object => $TicketObj, Grouping => 'Dates', InTable => 1 &>
 % $m->callback( %ARGS, CallbackName => 'EndOfList', Ticket => $TicketObj );
 </table>

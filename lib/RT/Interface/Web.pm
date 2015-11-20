@@ -3511,6 +3511,8 @@ sub ProcessTicketDates {
         Starts
         Started
         Due
+        SLAReply
+        SLAResolve
     );
 
     #Run through each field in this list. update the value if apropriate
