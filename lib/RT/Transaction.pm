@@ -137,7 +137,7 @@ sub Create {
     }
 
     unless ( defined($args{'TimeReplyLeft'}) || $args{'ObjectType'} ne 'RT::Ticket') {
-        if ( $args{'Type'} eq 'Correspond' ) {
+        if ( $args{'Type'} eq 'Correspond' || $args{'Type'} eq 'Record' ) {
             my $ticket = RT::Ticket->new( $self->CurrentUser );
             $ticket->Load($args{'ObjectId'});
             my $sla = $ticket->Id ? $ticket->SLAReplyObj->Diff : undef;

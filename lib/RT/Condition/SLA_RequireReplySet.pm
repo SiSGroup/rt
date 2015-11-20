@@ -69,7 +69,7 @@ sub IsApplicable {
     return 0 if $self->TicketObj->QueueObj->SLADisabled;
 
     my $type = $self->TransactionObj->Type;
-    if ( $type eq 'Create' || $type eq 'Correspond' ) {
+    if ( $type eq 'Create' || $type eq 'Correspond' || $type eq 'Record') {
         return 1 if $self->TicketObj->SLA;
         return 0;
     }

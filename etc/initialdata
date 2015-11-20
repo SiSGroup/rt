@@ -269,7 +269,7 @@
     },
     {  Name        => 'Require SLAReply set according to SLA', # loc
        Description => 'Detect a situation when we should set SLAReply date' , # loc
-       ApplicableTransTypes => 'Create,Correspond,Set,Status',
+       ApplicableTransTypes => 'Create,Correspond,Record,Set,Status',
        ExecModule => 'SLA_RequireReplySet',
     },
     {  Name        => 'Require SLAResolve set according to SLA', # loc
