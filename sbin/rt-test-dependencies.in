@@ -216,7 +216,7 @@ Digest::MD5 2.27
 Digest::SHA
 Email::Address 1.897
 Email::Address::List 0.02
-Encode 2.64
+Encode 2.63
 Errno
 File::Glob
 File::ShareDir
@@ -245,7 +245,7 @@ Mail::Mailer 1.57
 MIME::Entity 5.504
 Module::Refresh 0.03
 Module::Versions::Report 1.05
-Encode 2.64
+Encode 2.63
 Net::CIDR
 Net::IP
 Plack 1.0002
