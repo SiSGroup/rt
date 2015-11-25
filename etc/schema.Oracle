@@ -118,6 +118,7 @@ CREATE TABLE Transactions (
         OldReference            NUMBER(11,0),
         NewReference            NUMBER(11,0),
         Data                    VARCHAR2(255),
+        TimeReplyLeft           NUMBER(11,0),
         Creator                 NUMBER(11,0) DEFAULT 0 NOT NULL,
         Created                 DATE
 );
@@ -259,12 +260,15 @@ CREATE TABLE Tickets (
         TimeWorked              NUMBER(11,0) DEFAULT 0 NOT NULL,
         Status                  VARCHAR2(64),           
         SLA                     VARCHAR2(64),
+        TimeResolvedLeft        NUMBER(11,0),
         TimeLeft                NUMBER(11,0) DEFAULT 0 NOT NULL,
         Told                    DATE,
         Starts                  DATE,
         Started                 DATE,
         Due                     DATE,
         Resolved                DATE,
+        SLAReply                DATE,
+        SLAResolve              DATE,
         LastUpdatedBy           NUMBER(11,0) DEFAULT 0 NOT NULL,
         LastUpdated             DATE,
         Creator                 NUMBER(11,0) DEFAULT 0 NOT NULL,

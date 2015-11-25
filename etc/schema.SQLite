@@ -127,6 +127,7 @@ CREATE TABLE Transactions (
   OldReference integer NULL  ,
   NewReference integer NULL  ,
   Data varchar(255) collate NOCASE NULL  ,
+  TimeReplyLeft integer NULL  ,
 
   Creator integer NULL DEFAULT 0 ,
   Created DATETIME NULL  
@@ -291,12 +292,15 @@ CREATE TABLE Tickets (
   TimeWorked integer NULL DEFAULT 0 ,
   Status varchar(64) collate NOCASE NULL  ,
   SLA varchar(64) collate NOCASE NULL  ,
+  TimeResolvedLeft integer NULL  ,
   TimeLeft integer NULL DEFAULT 0 ,
   Told DATETIME NULL  ,
   Starts DATETIME NULL  ,
   Started DATETIME NULL  ,
   Due DATETIME NULL  ,
   Resolved DATETIME NULL  ,
+  SLAReply DATETIME NULL  ,
+  SLAResolve DATETIME NULL  ,
 
 
   LastUpdatedBy integer NULL DEFAULT 0 ,
