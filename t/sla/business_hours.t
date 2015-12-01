@@ -53,14 +53,17 @@ diag 'check business hours' if $ENV{'TEST_VERBOSE'};
     is( $ticket->SLA, 'Sunday', 'default sla' );
 
     my $start = $ticket->StartsObj->Unix;
-    my $due = $ticket->DueObj->Unix;
+    my $due = $ticket->SLAResolveObj->Unix;
     is( $start, 1168160400, 'Start date is 2007-01-07T09:00:00Z' );
-    is( $due, 1168164000, 'Due date is 2007-01-07T10:00:00Z' );
+    is( $due, 1168164000, 'SLAResolve date is 2007-01-07T10:00:00Z' );
 
     $ticket->SetSLA( 'Monday' );
     is( $ticket->SLA, 'Monday', 'new sla' );
-    $due = $ticket->DueObj->Unix;
-    is( $due, 1167645600, 'Due date is 2007-01-01T10:00:00Z' );
+    $due = $ticket->SLAResolveObj->Unix;
+    is( $due, 1168250400, 'SLAResolve date is 2007-01-08T10:00:00Z' );
+    $ticket->SetStarts( undef );
+    $due = $ticket->SLAResolveObj->Unix;
+    is( $due, 1167645600, 'SLAResolve date is 2007-01-01T10:00:00Z' );
 }
 
 done_testing();

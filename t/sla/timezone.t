@@ -32,8 +32,8 @@ diag 'check dates in US queue' if $ENV{'TEST_VERBOSE'};
 
     my $start = $ticket->StartsObj->ISO( Timezone => 'utc' );
     is( $start, '2007-01-01 22:00:00', 'Start date is right' );
-    my $due = $ticket->DueObj->ISO( Timezone => 'utc' );
-    is( $due, '2007-01-02 15:00:00', 'Due date is right' );
+    my $due = $ticket->SLAResolveObj->ISO( Timezone => 'utc' );
+    is( $due, '2007-01-02 15:00:00', 'SLAResolve date is right' );
 }
 
 diag 'check dates in RU queue' if $ENV{'TEST_VERBOSE'};
@@ -44,8 +44,8 @@ diag 'check dates in RU queue' if $ENV{'TEST_VERBOSE'};
 
     my $start = $ticket->StartsObj->ISO( Timezone => 'utc' );
     is( $start, '2007-01-02 06:00:00', 'Start date is right' );
-    my $due = $ticket->DueObj->ISO( Timezone => 'utc' );
-    is( $due, '2007-01-02 08:00:00', 'Due date is right' );
+    my $due = $ticket->SLAResolveObj->ISO( Timezone => 'utc' );
+    is( $due, '2007-01-02 08:00:00', 'SLAResolve date is right' );
 }
 
 done_testing;

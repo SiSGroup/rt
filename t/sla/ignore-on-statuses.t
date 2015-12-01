@@ -32,7 +32,7 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         );
         ok $id, "created ticket #$id";
         is $ticket->SLA, '2', 'default sla';
-        ok !$ticket->DueObj->Unix, 'no response deadline';
+        ok !$ticket->SLAReplyObj->Unix, 'no response deadline';
         $due = 0;
     }
 
@@ -47,7 +47,7 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $tmp = $ticket->DueObj->Unix;
+        my $tmp = $ticket->SLAReplyObj->Unix;
         ok $tmp > 0, 'Due date is set';
         ok $tmp > $due, "keep in loop due set";
         $due = $tmp;
@@ -62,7 +62,7 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         ok $status, 'stalled the ticket';
 
         $ticket->Load( $id );
-        ok !$ticket->DueObj->Unix, 'keep in loop deadline ignored for stalled';
+        ok !$ticket->SLAReplyObj->Unix, 'keep in loop deadline ignored for stalled';
     }
 
     # non-requestor reply again
@@ -80,7 +80,7 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
 
         is $ticket->Status, 'open', 'ticket was opened';
 
-        my $tmp = $ticket->DueObj->Unix;
+        my $tmp = $ticket->SLAReplyObj->Unix;
         ok $tmp > 0, 'Due date is set';
         ok $tmp > $due, "keep in loop sligtly moved";
         $due = $tmp;
@@ -115,7 +115,7 @@ diag 'Check that failing to reply to the requestors is not ignored' if $ENV{'TES
         );
         ok $id, "created ticket #$id";
         is $ticket->SLA, '2', 'default sla';
-        $due = $ticket->DueObj->Unix;
+        $due = $ticket->SLAReplyObj->Unix;
         ok $due > 0, 'response deadline';
     }
 
@@ -128,7 +128,7 @@ diag 'Check that failing to reply to the requestors is not ignored' if $ENV{'TES
         ok $status, 'stalled the ticket';
 
         $ticket->Load( $id );
-        my $tmp = $ticket->DueObj->Unix;
+        my $tmp = $ticket->SLAReplyObj->Unix;
         ok $tmp, 'response deadline not unset';
         is $tmp, $due, 'due not changed';
     }
@@ -148,7 +148,7 @@ diag 'Check that failing to reply to the requestors is not ignored' if $ENV{'TES
 
         is $ticket->Status, 'open', 'ticket was opened';
 
-        my $tmp = $ticket->DueObj->Unix;
+        my $tmp = $ticket->SLAReplyObj->Unix;
         ok $tmp > 0, 'Due date is set';
         ok $tmp > $due, "keep in loop is greater than response";
         $due = $tmp;
@@ -163,7 +163,7 @@ diag 'Check that failing to reply to the requestors is not ignored' if $ENV{'TES
         ok $status, 'stalled the ticket';
 
         $ticket->Load( $id );
-        ok !$ticket->DueObj->Unix, 'keep in loop deadline unset for stalled';
+        ok !$ticket->SLAReplyObj->Unix, 'keep in loop deadline unset for stalled';
     }
 }
 
@@ -200,7 +200,7 @@ diag 'check the ExcludeTimeOnIgnoredStatuses option' if $ENV{'TEST_VERBOSE'};
         );
         ok $id, "created ticket #$id";
         is $ticket->SLA, '2', 'default sla';
-        $due = $ticket->DueObj->Unix;
+        $due = $ticket->SLAReplyObj->Unix;
         ok $due > 0, 'response deadline';
     }
 
@@ -213,7 +213,7 @@ diag 'check the ExcludeTimeOnIgnoredStatuses option' if $ENV{'TEST_VERBOSE'};
         ok $status, 'stalled the ticket';
 
         $ticket->Load( $id );
-        ok !$ticket->DueObj->Unix, 'deadline ignored for stalled';
+        ok !$ticket->SLAReplyObj->Unix, 'deadline ignored for stalled';
     }
 
     # requestor reply again
@@ -231,7 +231,7 @@ diag 'check the ExcludeTimeOnIgnoredStatuses option' if $ENV{'TEST_VERBOSE'};
 
         is $ticket->Status, 'open', 'ticket was opened';
 
-        my $tmp = $ticket->DueObj->Unix;
+        my $tmp = $ticket->SLAReplyObj->Unix;
         ok $tmp > 0, 'Due date is set';
         ok $tmp == $due, "deadline not changed";
     }
@@ -249,11 +249,11 @@ diag 'check the ExcludeTimeOnIgnoredStatuses option' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         my ($status, $msg) = $ticket->SetStatus('stalled');
         ok $status, 'stalled the ticket';
-        ok !$ticket->DueObj->Unix, 'deadline ignored for stalled';
+        ok !$ticket->SLAReplyObj->Unix, 'deadline ignored for stalled';
         sleep 1;
         $ticket->SetStatus('open');
         is $ticket->Status, 'open', 'ticket was opened';
-        my $tmp = $ticket->DueObj->Unix;
+        my $tmp = $ticket->SLAReplyObj->Unix;
         ok $tmp > 0, 'Due date is set';
         ok $tmp >= $due+1, "deadline slighted moved";
         ok $tmp <= $due+5, "deadline slighted moved but not much";

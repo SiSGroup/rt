@@ -39,9 +39,9 @@ diag 'check set of Due date with Queue default SLA' if $ENV{'TEST_VERBOSE'};
     is $ticket->SLA, '4', 'default sla';
 
     my $start = $ticket->StartsObj->Unix;
-    my $due = $ticket->DueObj->Unix;
+    my $due = $ticket->SLAResolveObj->Unix;
     is( $start, $time, 'Start Date is right' );
-    is( $due, $time+3600*4, 'Due date is right');
+    is( $due, $time+3600*4, 'SLAResolve date is right');
 
     my ( $status, $message ) = $queue->DeleteAttribute('SLA');
     ok( $status, $message );

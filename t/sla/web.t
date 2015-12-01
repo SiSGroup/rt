@@ -58,7 +58,7 @@ ok $m->login( 'user', 'password' ), 'logged in as user';
     my $id = $ticket->id;
     is( $ticket->SLA,             2,                  'default SLA is 2' );
     is( $ticket->StartsObj->Unix, $now,               'Starts' );
-    is( $ticket->DueObj->Unix,    $now + 60 * 60 * 2, 'Due' );
+    is( $ticket->SLAReplyObj->Unix,    $now + 60 * 60 * 2, 'SLAReply' );
 }
 
 {
@@ -71,7 +71,7 @@ ok $m->login( 'user', 'password' ), 'logged in as user';
     my $id = $ticket->id;
     is( $ticket->SLA,             4,                  'SLA is set to 4' );
     is( $ticket->StartsObj->Unix, $now,               'Starts' );
-    is( $ticket->DueObj->Unix,    $now + 60 * 60 * 4, 'Due' );
+    is( $ticket->SLAReplyObj->Unix,    $now + 60 * 60 * 4, 'SLAReply' );
     $m->follow_link_ok( { text => 'Basics' }, 'Ticket -> Basics' );
     $m->submit_form(
         form_name => 'TicketModify',
@@ -79,7 +79,7 @@ ok $m->login( 'user', 'password' ), 'logged in as user';
     );
     $ticket->Load( $id );
     is( $ticket->SLA, 2, 'SLA is set to 2' );
-    is( $ticket->DueObj->Unix, $now + 60 * 60 * 2, 'Due is updated accordingly' );
+    is( $ticket->SLAReplyObj->Unix, $now + 60 * 60 * 2, 'SLAReply is updated accordingly' );
 }
 
 {
@@ -101,7 +101,7 @@ ok $m->login( 'user', 'password' ), 'logged in as user';
     ok( $ticket->id,               'ticket is created' );
     ok( !$ticket->SLA,             'no SLA' );
     ok( !$ticket->StartsObj->Unix, 'no Starts' );
-    ok( !$ticket->DueObj->Unix,    'no Due' );
+    ok( !$ticket->SLAReplyObj->Unix,    'no SLAReply' );
 }
 
 undef $m;

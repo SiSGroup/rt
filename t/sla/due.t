@@ -5,7 +5,7 @@ use RT::Test tests => undef;
 
 RT::Test->load_or_create_queue( Name => 'General', SLADisabled => 0 );
 
-diag 'check change of Due date when SLA for a ticket is changed' if $ENV{'TEST_VERBOSE'};
+diag 'check change of SLAReply date when SLA for a ticket is changed' if $ENV{'TEST_VERBOSE'};
 {
     %RT::ServiceAgreements = (
         Default => '2',
@@ -23,21 +23,21 @@ diag 'check change of Due date when SLA for a ticket is changed' if $ENV{'TEST_V
 
     is $ticket->SLA, '2', 'default sla';
 
-    my $orig_due = $ticket->DueObj->Unix;
-    ok $orig_due > 0, 'Due date is set';
-    ok $orig_due > $time, 'Due date is in the future';
+    my $orig_due = $ticket->SLAResolveObj->Unix;
+    ok $orig_due > 0, 'SLAResolve date is set';
+    ok $orig_due > $time, 'SLAResolve date is in the future';
 
     $ticket->SetSLA('4');
     is $ticket->SLA, '4', 'new sla';
 
-    my $new_due = $ticket->DueObj->Unix;
-    ok $new_due > 0, 'Due date is set';
-    ok $new_due > $time, 'Due date is in the future';
+    my $new_due = $ticket->SLAResolveObj->Unix;
+    ok $new_due > 0, 'SLAResolve date is set';
+    ok $new_due > $time, 'SLAResolve date is in the future';
 
     is $new_due, $orig_due+2*60*60, 'difference is two hours';
 }
 
-diag 'when not requestor creates a ticket, we dont set due date' if $ENV{'TEST_VERBOSE'};
+diag 'when not requestor creates a ticket, we dont set SLAReply date' if $ENV{'TEST_VERBOSE'};
 {
     %RT::ServiceAgreements = (
         Default => '2',
@@ -56,11 +56,11 @@ diag 'when not requestor creates a ticket, we dont set due date' if $ENV{'TEST_V
 
     is $ticket->SLA, '2', 'default sla';
 
-    my $due = $ticket->DueObj->Unix;
-    ok $due <= 0, 'Due date is not set';
+    my $due = $ticket->SLAReplyObj->Unix;
+    ok $due <= 0, 'SLAReply date is not set';
 }
 
-diag 'check that reply to requestors unset due date' if $ENV{'TEST_VERBOSE'};
+diag 'check that reply to requestors unsets SLAReply date' if $ENV{'TEST_VERBOSE'};
 {
     %RT::ServiceAgreements = (
         Default => '2',
@@ -86,8 +86,8 @@ diag 'check that reply to requestors unset due date' if $ENV{'TEST_VERBOSE'};
 
         is $ticket->SLA, '2', 'default sla';
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due > 0, 'Due date is set';
+        my $due = $ticket->SLAReplyObj->Unix;
+        ok $due > 0, 'SLAReply date is set';
     }
 
     # non-requestor reply
@@ -101,8 +101,8 @@ diag 'check that reply to requestors unset due date' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due <= 0, 'Due date is not set';
+        my $due = $ticket->SLAReplyObj->Unix;
+        ok $due <= 0, 'SLAReply date is not set';
     }
 
     # non-requestor reply again
@@ -116,8 +116,8 @@ diag 'check that reply to requestors unset due date' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due <= 0, 'Due date is not set';
+        my $due = $ticket->SLAReplyObj->Unix;
+        ok $due <= 0, 'SLAReply date is not set';
     }
 
     # requestor reply
@@ -133,8 +133,8 @@ diag 'check that reply to requestors unset due date' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due > 0, 'Due date is set again';
+        my $due = $ticket->SLAReplyObj->Unix;
+        ok $due > 0, 'SLAReply date is set again';
 
         $last_unreplied_due = $due;
     }
@@ -152,13 +152,13 @@ diag 'check that reply to requestors unset due date' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due > 0, 'Due date is still set';
-        is $due, $last_unreplied_due, 'due is unchanged';
+        my $due = $ticket->SLAReplyObj->Unix;
+        ok $due > 0, 'SLAReply date is still set';
+        is $due, $last_unreplied_due, 'SLAReply is unchanged';
     }
 }
 
-diag 'check that reply to requestors dont unset due date with KeepInLoop' if $ENV{'TEST_VERBOSE'};
+diag 'check that reply to requestors dont unset SLAReply date with KeepInLoop' if $ENV{'TEST_VERBOSE'};
 {
     %RT::ServiceAgreements = (
         Default => '2',
@@ -188,8 +188,8 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
 
         is $ticket->SLA, '2', 'default sla';
 
-        $due = $ticket->DueObj->Unix;
-        ok $due > 0, 'Due date is set';
+        $due = $ticket->SLAReplyObj->Unix;
+        ok $due > 0, 'SLAReply date is set';
     }
 
     # non-requestor reply
@@ -203,8 +203,8 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $tmp = $ticket->DueObj->Unix;
-        ok $tmp > 0, 'Due date is set';
+        my $tmp = $ticket->SLAReplyObj->Unix;
+        ok $tmp > 0, 'SLAReply date is set';
         ok $tmp > $due, "keep in loop is 4hours when response is 2hours";
         $due = $tmp;
     }
@@ -221,8 +221,8 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $tmp = $ticket->DueObj->Unix;
-        ok $tmp > 0, 'Due date is set';
+        my $tmp = $ticket->SLAReplyObj->Unix;
+        ok $tmp > 0, 'SLAReply date is set';
         ok $tmp > $due, "keep in loop sligtly moved";
         $due = $tmp;
     }
@@ -240,8 +240,8 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $tmp = $ticket->DueObj->Unix;
-        ok $tmp > 0, 'Due date is set';
+        my $tmp = $ticket->SLAReplyObj->Unix;
+        ok $tmp > 0, 'SLAReply date is set';
         ok $tmp < $due, "response deadline is 2 hours earlier";
         $due = $tmp;
 
@@ -261,9 +261,9 @@ diag 'check that reply to requestors dont unset due date with KeepInLoop' if $EN
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $tmp = $ticket->DueObj->Unix;
-        ok $tmp > 0, 'Due date is set';
-        is $tmp, $last_unreplied_due, 'due is unchanged';
+        my $tmp = $ticket->SLAReplyObj->Unix;
+        ok $tmp > 0, 'SLAReply date is set';
+        is $tmp, $last_unreplied_due, 'SLAReply is unchanged';
         $due = $tmp;
     }
 }
@@ -294,8 +294,8 @@ diag 'check that replies dont affect resolve deadlines' if $ENV{'TEST_VERBOSE'};
 
         is $ticket->SLA, '2', 'default sla';
 
-        $orig_due = $ticket->DueObj->Unix;
-        ok $orig_due > 0, 'Due date is set';
+        $orig_due = $ticket->SLAResolveObj->Unix;
+        ok $orig_due > 0, 'SLAResolve date is set';
     }
 
     # non-requestor reply
@@ -309,9 +309,9 @@ diag 'check that replies dont affect resolve deadlines' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due > 0, 'Due date is set';
-        is $due, $orig_due, 'due is not changed';
+        my $due = $ticket->SLAResolveObj->Unix;
+        ok $due > 0, 'SLAResolve date is set';
+        is $due, $orig_due, 'SLAResolve is not changed';
     }
 
     # requestor reply
@@ -326,9 +326,9 @@ diag 'check that replies dont affect resolve deadlines' if $ENV{'TEST_VERBOSE'};
         $ticket->Load( $id );
         ok $ticket->id, "loaded ticket #$id";
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due > 0, 'Due date is set';
-        is $due, $orig_due, 'due is not changed';
+        my $due = $ticket->SLAResolveObj->Unix;
+        ok $due > 0, 'SLAResolve date is set';
+        is $due, $orig_due, 'SLAResolve is not changed';
     }
 }
 
@@ -360,8 +360,8 @@ diag 'check that owner is not treated as requestor' if $ENV{'TEST_VERBOSE'};
         is $ticket->SLA, '2', 'default sla';
         is $ticket->Owner, $root->id, 'correct owner';
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due <= 0, 'Due date is not set';
+        my $due = $ticket->SLAResolveObj->Unix;
+        ok $due <= 0, 'SLAResolve date is not set';
     }
 }
 
@@ -390,8 +390,8 @@ diag 'check that response deadline is left alone when there is no requestor' if 
 
         is $ticket->SLA, '2', 'default sla';
 
-        my $due = $ticket->DueObj->Unix;
-        ok $due <= 0, 'Due date is not set';
+        my $due = $ticket->SLAReplyObj->Unix;
+        ok $due <= 0, 'SLAReply date is not set';
     }
 }
 
